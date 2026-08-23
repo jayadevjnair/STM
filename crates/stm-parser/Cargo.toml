@@ -1,0 +1,13 @@
+[package]
+name = "stm-parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stm-core = { path = "../stm-core" }
+stm-binary = { path = "../stm-binary" }
+stm-container = { path = "../stm-container" }
+stm-crypto = { path = "../stm-crypto" }
+
+[dev-dependencies]
+stm-writer = { path = "../stm-writer" }

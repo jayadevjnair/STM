@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "crates/stm-core",
+    "crates/stm-binary",
+    "crates/stm-container",
+    "crates/stm-crypto",
+    "crates/stm-parser",
+    "crates/stm-writer",
+    "crates/stm-cli",
+]
+
+resolver = "2"

@@ -1,0 +1,8 @@
+[package]
+name = "stm-crypto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stm-core = { path = "../stm-core" }
+sha2 = "0.10"
