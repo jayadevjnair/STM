@@ -1,3 +1,8 @@
 /target/
 **/*.rs.bk
 .DS_Store
+# Generated STM container files
+*.stmf
+
+# Rust build output
+target/
