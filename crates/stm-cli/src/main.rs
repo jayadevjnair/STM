@@ -42,6 +42,19 @@ enum Commands {
         /// STM container file
         input: PathBuf,
     },
+    /// Extract an object from an STM container
+    Extract {
+        /// STM container file
+        input: PathBuf,
+
+        /// Object number
+        #[arg(long)]
+        oid: u64,
+
+        /// Output file for the extracted object
+        #[arg(short, long)]
+        output: PathBuf,
+    },
 
     /// Generate an Ed25519 key pair
     Keygen {
@@ -181,7 +194,22 @@ fn main() -> Result<()> {
                 }
             }
         }
+        // Extract an object from an STM container
+        Commands::Extract { input, oid, output } => {
+            use stm_parser::{ParserMode, StmParser};
 
+            let data = std::fs::read(&input)?;
+            let parser = StmParser::new(ParserMode::Strict);
+
+            let object_data = parser.extract_object_by_number(&data, oid)?;
+
+            std::fs::write(&output, object_data)?;
+
+            println!("Object extracted successfully");
+            println!("Input: {}", input.display());
+            println!("Object: {}", oid);
+            println!("Output: {}", output.display());
+        }
         Commands::Keygen { output } => {
             use stm_signature::{generate_signing_key, public_key_bytes};
 

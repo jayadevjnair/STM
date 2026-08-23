@@ -26,7 +26,47 @@ impl StmParser {
     pub fn new(mode: ParserMode) -> Self {
         Self { mode }
     }
+    pub fn extract_object_by_number(
+        &self,
+        data: &[u8],
+        object_number: u64,
+    ) -> Result<Vec<u8>, StmError> {
+        // Parse the directory.
+        let directory = self.parse_directory(data)?;
 
+        // Convert the object number into the OID format used by the CLI.
+        let mut oid = [0u8; 16];
+        oid[8..16].copy_from_slice(&object_number.to_be_bytes());
+
+        // Find the object.
+        let entry = directory
+            .entries
+            .iter()
+            .find(|entry| entry.oid == oid)
+            .ok_or(StmError::InvalidDirectory)?;
+
+        // Calculate safe bounds.
+        let start: usize = entry
+            .offset
+            .try_into()
+            .map_err(|_| StmError::ObjectOutOfBounds)?;
+
+        let end_u64 = entry
+            .offset
+            .checked_add(entry.length)
+            .ok_or(StmError::ObjectOutOfBounds)?;
+
+        let end: usize = end_u64
+            .try_into()
+            .map_err(|_| StmError::ObjectOutOfBounds)?;
+
+        if start > end || end > data.len() {
+            return Err(StmError::ObjectOutOfBounds);
+        }
+
+        // Return a copy of the object payload.
+        Ok(data[start..end].to_vec())
+    }
     pub fn parse_bytes(&self, data: &[u8]) -> Result<StmSummary, StmError> {
         // 1. Check minimum container size.
         if data.len() < TOTAL_HEADER_SIZE {
