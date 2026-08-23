@@ -1,14 +1,17 @@
+# Rust build output
 /target/
+target/
+
+# Rust backup files
 **/*.rs.bk
+
+# macOS
 .DS_Store
+
 # Generated STM container files
 *.stmf
+*.bin
 
-# Rust build output
-target/
-# Generated key files
+# Private/generated keys
 keys/
 *.key
-
-# Generated STM test files
-tampered.stmf
