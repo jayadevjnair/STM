@@ -42,6 +42,10 @@ enum Commands {
         /// STM container file
         input: PathBuf,
     },
+    List {
+        /// STM container file
+        input: PathBuf,
+    },
     /// Extract an object from an STM container
     Extract {
         /// STM container file
@@ -55,6 +59,7 @@ enum Commands {
         #[arg(short, long)]
         output: PathBuf,
     },
+    /// List all objects in an STM container
 
     /// Generate an Ed25519 key pair
     Keygen {
@@ -192,6 +197,29 @@ fn main() -> Result<()> {
 
                     std::process::exit(1);
                 }
+            }
+        }
+        Commands::List { input } => {
+            use stm_parser::{ParserMode, StmParser};
+
+            let data = std::fs::read(&input)?;
+            let parser = StmParser::new(ParserMode::Strict);
+
+            let entries = parser.list_objects(&data)?;
+
+            println!("STM Container Objects");
+            println!("File: {}", input.display());
+            println!();
+
+            for (index, entry) in entries.iter().enumerate() {
+                let object_number = u64::from_be_bytes(entry.oid[8..16].try_into().unwrap());
+
+                println!("Object #{}", index);
+                println!("OID: {}", object_number);
+                println!("Type: {}", entry.obj_type);
+                println!("Offset: {}", entry.offset);
+                println!("Length: {}", entry.length);
+                println!();
             }
         }
         // Extract an object from an STM container

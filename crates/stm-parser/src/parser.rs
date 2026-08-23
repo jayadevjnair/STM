@@ -26,6 +26,41 @@ impl StmParser {
     pub fn new(mode: ParserMode) -> Self {
         Self { mode }
     }
+    pub fn extract_object_by_oid(&self, data: &[u8], oid: &Oid) -> Result<Vec<u8>, StmError> {
+        let directory = self.parse_directory(data)?;
+
+        directory.validate(data.len() as u64)?;
+
+        let entry = directory.find(oid).ok_or(StmError::InvalidDirectory)?;
+
+        let start: usize = entry
+            .offset
+            .try_into()
+            .map_err(|_| StmError::ObjectOutOfBounds)?;
+
+        let end_u64 = entry
+            .offset
+            .checked_add(entry.length)
+            .ok_or(StmError::ObjectOutOfBounds)?;
+
+        let end: usize = end_u64
+            .try_into()
+            .map_err(|_| StmError::ObjectOutOfBounds)?;
+
+        if start > end || end > data.len() {
+            return Err(StmError::ObjectOutOfBounds);
+        }
+
+        Ok(data[start..end].to_vec())
+    }
+    pub fn list_objects(&self, data: &[u8]) -> Result<Vec<DirectoryEntry>, StmError> {
+        let directory = self.parse_directory(data)?;
+
+        directory.validate(data.len() as u64)?;
+
+        Ok(directory.entries)
+    }
+
     pub fn extract_object_by_number(
         &self,
         data: &[u8],
