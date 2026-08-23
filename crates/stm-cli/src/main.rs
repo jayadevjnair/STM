@@ -25,6 +25,10 @@ enum Commands {
         /// Create a digitally signed STM container
         #[arg(long)]
         signed: bool,
+
+        /// Path to the Ed25519 private key
+        #[arg(long)]
+        key: Option<PathBuf>,
     },
 
     /// Inspect an STM container
@@ -54,6 +58,7 @@ fn main() -> Result<()> {
             output,
             count,
             signed,
+            key,
         } => {
             use stm_core::ObjectFlags;
             use stm_writer::ContainerBuilder;
@@ -71,7 +76,18 @@ fn main() -> Result<()> {
             }
 
             let data = if signed {
-                builder.build_signed()?
+                let key_path = key.ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "A private key is required when using --signed. Use --key <path>"
+                    )
+                })?;
+
+                let key_data = std::fs::read(&key_path)?;
+
+                let signing_key = stm_signature::load_signing_key(&key_data)
+                    .map_err(|error| anyhow::anyhow!("{}", error))?;
+
+                builder.build_signed(&signing_key)?
             } else {
                 builder.build()?
             };
@@ -142,6 +158,12 @@ fn main() -> Result<()> {
                             "Digital Signature: {}",
                             if valid { "VALID" } else { "INVALID" }
                         );
+
+                        if !valid {
+                            println!("Result: INVALID");
+                            println!("Reason: Digital signature verification failed");
+                            std::process::exit(1);
+                        }
                     } else {
                         println!("Digital Signature: NOT PRESENT");
                     }

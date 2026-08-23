@@ -1,7 +1,7 @@
-use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+pub use ed25519_dalek::SigningKey;
+use ed25519_dalek::{Signature, Signer, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use stm_core::{Hash, StmError};
-
 pub const SIGNATURE_SIZE: usize = 64;
 pub const PUBLIC_KEY_SIZE: usize = 32;
 
@@ -37,4 +37,18 @@ pub fn public_key_bytes(signing_key: &SigningKey) -> [u8; PUBLIC_KEY_SIZE] {
 /// Restore a verifying key from raw bytes.
 pub fn verifying_key_from_bytes(bytes: &[u8; PUBLIC_KEY_SIZE]) -> Result<VerifyingKey, StmError> {
     VerifyingKey::from_bytes(bytes).map_err(|_| StmError::InvalidPublicKey)
+}
+
+/// Load a 32-byte Ed25519 private key.
+pub fn load_signing_key(data: &[u8]) -> Result<SigningKey, StmError> {
+    let key_bytes: [u8; 32] = data.try_into().map_err(|_| StmError::InvalidPrivateKey)?;
+
+    Ok(SigningKey::from_bytes(&key_bytes))
+}
+
+/// Load a 32-byte Ed25519 public key.
+pub fn load_public_key(data: &[u8]) -> Result<VerifyingKey, StmError> {
+    let key_bytes: [u8; 32] = data.try_into().map_err(|_| StmError::InvalidPublicKey)?;
+
+    VerifyingKey::from_bytes(&key_bytes).map_err(|_| StmError::InvalidPublicKey)
 }

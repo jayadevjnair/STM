@@ -2,8 +2,8 @@ use stm_binary::{SignatureBlock, StmHeader, TOTAL_HEADER_SIZE};
 use stm_container::directory::{Directory, DirectoryEntry};
 use stm_core::{Hash, ObjectFlags, ObjectType, Oid, StmError};
 use stm_crypto::{build_merkle_root, compute_leaf};
-use stm_signature::{generate_signing_key, public_key_bytes, sign_merkle_root};
-
+use stm_signature::SigningKey;
+use stm_signature::{public_key_bytes, sign_merkle_root};
 #[derive(Debug, Clone)]
 pub struct PendingObject {
     pub oid: Oid,
@@ -24,22 +24,19 @@ impl ContainerBuilder {
         }
     }
 
-    /// Build a signed STM container.
-    pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
+    /// Build a signed STM container using the provided private key.
+    pub fn build_signed(&mut self, signing_key: &SigningKey) -> Result<Vec<u8>, StmError> {
         // Build the unsigned container.
         let mut container = self.build()?;
-
-        // Generate signing key.
-        let signing_key = generate_signing_key();
 
         // Read the header.
         let mut header = StmHeader::from_bytes(&container)?;
 
-        // Sign the Merkle root.
-        let signature = sign_merkle_root(&signing_key, &header.core.merkle_root);
+        // Sign the Merkle root using the provided private key.
+        let signature = sign_merkle_root(signing_key, &header.core.merkle_root);
 
-        // Get public key.
-        let public_key = public_key_bytes(&signing_key);
+        // Get the corresponding public key.
+        let public_key = public_key_bytes(signing_key);
 
         // Create signature block.
         let signature_block = SignatureBlock::new(public_key, signature);

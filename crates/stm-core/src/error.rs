@@ -5,6 +5,9 @@ pub enum StmError {
     #[error("invalid STM magic bytes")]
     InvalidMagic,
 
+    #[error("invalid private key")]
+    InvalidPrivateKey,
+
     #[error("unsupported STM version")]
     UnsupportedVersion,
 
