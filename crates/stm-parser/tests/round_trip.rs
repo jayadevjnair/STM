@@ -7,21 +7,11 @@ fn writer_and_parser_round_trip() {
     let mut builder = ContainerBuilder::new();
 
     builder
-        .add_object(
-            [0x01; 16],
-            1,
-            ObjectFlags(0),
-            b"Hello STM".to_vec(),
-        )
+        .add_object([0x01; 16], 1, ObjectFlags(0), b"Hello STM".to_vec())
         .unwrap();
 
     builder
-        .add_object(
-            [0x02; 16],
-            2,
-            ObjectFlags(0),
-            b"Second STM object".to_vec(),
-        )
+        .add_object([0x02; 16], 2, ObjectFlags(0), b"Second STM object".to_vec())
         .unwrap();
 
     // Build the STM container.
@@ -42,12 +32,7 @@ fn parser_detects_tampered_object() {
     let mut builder = ContainerBuilder::new();
 
     builder
-        .add_object(
-            [0x01; 16],
-            1,
-            ObjectFlags(0),
-            b"Original data".to_vec(),
-        )
+        .add_object([0x01; 16], 1, ObjectFlags(0), b"Original data".to_vec())
         .unwrap();
 
     let mut container = builder.build().unwrap();

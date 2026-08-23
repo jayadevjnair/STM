@@ -38,6 +38,12 @@ enum Commands {
         /// STM container file
         input: PathBuf,
     },
+
+    /// Generate an Ed25519 key pair
+    Keygen {
+        /// Directory where keys will be saved
+        output: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
@@ -57,17 +63,11 @@ fn main() -> Result<()> {
             for i in 0..count {
                 let mut oid = [0u8; 16];
 
-                // Deterministic OID for testing.
                 oid[8..16].copy_from_slice(&(i as u64).to_be_bytes());
 
                 let payload = format!("Object number {}", i).into_bytes();
 
-                builder.add_object(
-                    oid,
-                    0x0001,
-                    ObjectFlags(0),
-                    payload,
-                )?;
+                builder.add_object(oid, 0x0001, ObjectFlags(0), payload)?;
             }
 
             let data = if signed {
@@ -95,17 +95,10 @@ fn main() -> Result<()> {
             println!("Version: 1.0");
             println!("Total Length: {} bytes", summary.total_length);
             println!("Objects: {}", summary.object_count);
-
-            println!(
-                "Signed: {}",
-                if summary.signed { "YES" } else { "NO" }
-            );
+            println!("Signed: {}", if summary.signed { "YES" } else { "NO" });
 
             if let Some(valid) = summary.signature_valid {
-                println!(
-                    "Signature: {}",
-                    if valid { "VALID" } else { "INVALID" }
-                );
+                println!("Signature: {}", if valid { "VALID" } else { "INVALID" });
             }
 
             println!("Merkle Root: {:02x?}", summary.merkle_root);
@@ -142,23 +135,12 @@ fn main() -> Result<()> {
                         }
                     );
 
-                    println!(
-                        "Signed: {}",
-                        if summary.signed {
-                            "YES"
-                        } else {
-                            "NO"
-                        }
-                    );
+                    println!("Signed: {}", if summary.signed { "YES" } else { "NO" });
 
                     if let Some(valid) = summary.signature_valid {
                         println!(
                             "Digital Signature: {}",
-                            if valid {
-                                "VALID"
-                            } else {
-                                "INVALID"
-                            }
+                            if valid { "VALID" } else { "INVALID" }
                         );
                     } else {
                         println!("Digital Signature: NOT PRESENT");
@@ -176,6 +158,27 @@ fn main() -> Result<()> {
                     std::process::exit(1);
                 }
             }
+        }
+
+        Commands::Keygen { output } => {
+            use stm_signature::{generate_signing_key, public_key_bytes};
+
+            std::fs::create_dir_all(&output)?;
+
+            let signing_key = generate_signing_key();
+
+            let private_key = signing_key.to_bytes();
+            let public_key = public_key_bytes(&signing_key);
+
+            let private_path = output.join("private.key");
+            let public_path = output.join("public.key");
+
+            std::fs::write(&private_path, private_key)?;
+            std::fs::write(&public_path, public_key)?;
+
+            println!("Ed25519 key pair generated");
+            println!("Private key: {}", private_path.display());
+            println!("Public key: {}", public_path.display());
         }
     }
 

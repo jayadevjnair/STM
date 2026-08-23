@@ -9,3 +9,4 @@ clap = { version = "4", features = ["derive"] }
 stm-core = { path = "../stm-core" }
 stm-writer = { path = "../stm-writer" }
 stm-parser = { path = "../stm-parser" }
+stm-signature = { path = "../stm-signature" }

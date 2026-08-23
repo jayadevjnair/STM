@@ -6,3 +6,9 @@
 
 # Rust build output
 target/
+# Generated key files
+keys/
+*.key
+
+# Generated STM test files
+tampered.stmf

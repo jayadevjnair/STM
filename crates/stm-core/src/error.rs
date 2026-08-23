@@ -21,7 +21,7 @@ pub enum StmError {
 
     #[error("invalid public key")]
     InvalidPublicKey,
-    
+
     #[error("object exceeds container bounds")]
     ObjectOutOfBounds,
 

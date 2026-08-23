@@ -7,12 +7,7 @@ fn detects_tampered_signed_container() {
     let mut builder = ContainerBuilder::new();
 
     builder
-        .add_object(
-            [1u8; 16],
-            1,
-            ObjectFlags(0),
-            b"Signed secure data".to_vec(),
-        )
+        .add_object([1u8; 16], 1, ObjectFlags(0), b"Signed secure data".to_vec())
         .unwrap();
 
     let mut data = builder.build_signed().unwrap();
@@ -27,7 +22,6 @@ fn detects_tampered_signed_container() {
 
     assert!(matches!(
         result,
-        Err(StmError::MerkleRootMismatch)
-            | Err(StmError::InvalidSignature)
+        Err(StmError::MerkleRootMismatch) | Err(StmError::InvalidSignature)
     ));
 }

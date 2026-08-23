@@ -44,10 +44,10 @@ fn unordered_directory_fails() {
         flags: ObjectFlags::NONE,
     });
 
-   assert!(matches!(
-    directory.validate(500),
-    Err(StmError::DirectoryOutOfOrder)
-));
+    assert!(matches!(
+        directory.validate(500),
+        Err(StmError::DirectoryOutOfOrder)
+    ));
 }
 
 #[test]
@@ -62,10 +62,10 @@ fn object_outside_container_fails() {
         flags: ObjectFlags::NONE,
     });
 
-  assert!(matches!(
-    directory.validate(500),
-    Err(StmError::ObjectOutOfBounds)
-));
+    assert!(matches!(
+        directory.validate(500),
+        Err(StmError::ObjectOutOfBounds)
+    ));
 }
 
 #[test]

@@ -1,8 +1,4 @@
-use stm_crypto::{
-    build_merkle_root,
-    compute_leaf,
-    empty_root,
-};
+use stm_crypto::{build_merkle_root, compute_leaf, empty_root};
 
 #[test]
 fn empty_tree_has_correct_root() {

@@ -5,9 +5,7 @@ pub const SIGNATURE_PUBLIC_KEY_SIZE: usize = 32;
 pub const SIGNATURE_SIZE: usize = 64;
 
 pub const SIGNATURE_BLOCK_SIZE: usize =
-    SIGNATURE_ALGORITHM_SIZE
-    + SIGNATURE_PUBLIC_KEY_SIZE
-    + SIGNATURE_SIZE;
+    SIGNATURE_ALGORITHM_SIZE + SIGNATURE_PUBLIC_KEY_SIZE + SIGNATURE_SIZE;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SignatureBlock {

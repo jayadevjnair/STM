@@ -9,12 +9,7 @@ fn detects_tampered_object_data() {
     let oid = [1u8; 16];
 
     builder
-        .add_object(
-            oid,
-            1,
-            ObjectFlags(0),
-            b"Original secure data".to_vec(),
-        )
+        .add_object(oid, 1, ObjectFlags(0), b"Original secure data".to_vec())
         .unwrap();
 
     let mut data = builder.build().unwrap();

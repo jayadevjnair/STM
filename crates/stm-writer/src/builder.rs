@@ -1,12 +1,9 @@
+use stm_binary::{SignatureBlock, StmHeader, TOTAL_HEADER_SIZE};
 use stm_container::directory::{Directory, DirectoryEntry};
 use stm_core::{Hash, ObjectFlags, ObjectType, Oid, StmError};
 use stm_crypto::{build_merkle_root, compute_leaf};
-use stm_binary::{SignatureBlock, StmHeader, TOTAL_HEADER_SIZE};
-use stm_signature::{
-    public_key_bytes,
-    sign_merkle_root,
-    generate_signing_key,
-};
+use stm_signature::{generate_signing_key, public_key_bytes, sign_merkle_root};
+
 #[derive(Debug, Clone)]
 pub struct PendingObject {
     pub oid: Oid,
@@ -26,48 +23,41 @@ impl ContainerBuilder {
             objects: Vec::new(),
         }
     }
+
     /// Build a signed STM container.
-///
-/// The Ed25519 signature protects the container's Merkle root.
-/// Build a signed STM container.
-///
-/// The Ed25519 signature protects the container's Merkle root.
-pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
-    // 1. Build the unsigned container first.
-    let mut container = self.build()?;
+    pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
+        // Build the unsigned container.
+        let mut container = self.build()?;
 
-    // 2. Generate a signing key.
-    let signing_key = generate_signing_key();
+        // Generate signing key.
+        let signing_key = generate_signing_key();
 
-    // 3. Read the current header.
-    let mut header = StmHeader::from_bytes(&container)?;
+        // Read the header.
+        let mut header = StmHeader::from_bytes(&container)?;
 
-    // 4. Sign the Merkle root.
-    let signature =
-        sign_merkle_root(&signing_key, &header.core.merkle_root);
+        // Sign the Merkle root.
+        let signature = sign_merkle_root(&signing_key, &header.core.merkle_root);
 
-    // 5. Extract the public key.
-    let public_key = public_key_bytes(&signing_key);
+        // Get public key.
+        let public_key = public_key_bytes(&signing_key);
 
-    // 6. Create the signature block.
-    let signature_block =
-        SignatureBlock::new(public_key, signature);
+        // Create signature block.
+        let signature_block = SignatureBlock::new(public_key, signature);
 
-    let signature_bytes = signature_block.to_bytes();
+        let signature_bytes = signature_block.to_bytes();
 
-    // 7. Update total length BEFORE writing the final header.
-    header.core.total_length += signature_bytes.len() as u64;
+        // Update container length.
+        header.core.total_length += signature_bytes.len() as u64;
 
-    // 8. Replace the header bytes.
-    let header_bytes = header.to_bytes();
-    container[0..TOTAL_HEADER_SIZE]
-        .copy_from_slice(&header_bytes);
+        // Replace header.
+        let header_bytes = header.to_bytes();
+        container[0..TOTAL_HEADER_SIZE].copy_from_slice(&header_bytes);
 
-    // 9. Append signature block.
-    container.extend_from_slice(&signature_bytes);
+        // Append signature.
+        container.extend_from_slice(&signature_bytes);
 
-    Ok(container)
-}
+        Ok(container)
+    }
 
     pub fn add_object(
         &mut self,
@@ -76,6 +66,7 @@ pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
         flags: ObjectFlags,
         payload: Vec<u8>,
     ) -> Result<(), StmError> {
+        // Prevent duplicate object IDs.
         if self.objects.iter().any(|object| object.oid == oid) {
             return Err(StmError::DuplicateOid);
         }
@@ -101,15 +92,13 @@ pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
     /// Serialize the directory.
     ///
     /// Format:
-    /// count      : u64
-    /// each entry :
-    ///   oid      : [u8; 16]
-    ///   type     : u32
-    ///   offset   : u64
-    ///   length   : u64
-    ///   flags    : u32
-    ///
-    /// Each entry = 40 bytes.
+    /// count: u64
+    /// each entry:
+    ///   oid: [u8; 16]
+    ///   type: u32
+    ///   offset: u64
+    ///   length: u64
+    ///   flags: u32
     fn serialize_directory(directory: &Directory) -> Vec<u8> {
         let mut out = Vec::new();
 
@@ -117,7 +106,8 @@ pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
 
         for entry in &directory.entries {
             out.extend_from_slice(&entry.oid);
-            out.extend_from_slice(&entry.obj_type.to_be_bytes());            out.extend_from_slice(&entry.offset.to_be_bytes());
+            out.extend_from_slice(&entry.obj_type.to_be_bytes());
+            out.extend_from_slice(&entry.offset.to_be_bytes());
             out.extend_from_slice(&entry.length.to_be_bytes());
             out.extend_from_slice(&entry.flags.0.to_be_bytes());
         }
@@ -156,48 +146,45 @@ pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
         build_merkle_root(leaves)
     }
 
-    /// Build a complete STM container.
+    /// Build a complete unsigned STM container.
     pub fn build(&mut self) -> Result<Vec<u8>, StmError> {
-        // 1. Canonical object ordering.
+        // Canonical object ordering.
         self.sort_objects();
 
-        // 2. We know the directory size because every entry has
-        // a fixed binary size.
-        //
+        // Directory size:
         // count = 8 bytes
-        // entry = 40 bytes
+        // each entry = 40 bytes
         let directory_size = 8u64 + (self.objects.len() as u64 * 40);
 
-        // 3. Objects begin after header + directory.
-        let object_base_offset =
-            TOTAL_HEADER_SIZE as u64 + directory_size;
+        // Objects begin after header and directory.
+        let object_base_offset = TOTAL_HEADER_SIZE as u64 + directory_size;
 
-        // 4. Build directory with final object offsets.
+        // Build directory.
         let directory = self.build_directory(object_base_offset);
 
-        // 5. Serialize directory.
+        // Serialize directory.
         let directory_bytes = Self::serialize_directory(&directory);
 
-        // 6. Compute Merkle root.
+        // Compute Merkle root.
         let merkle_root = self.compute_merkle_root();
 
-        // 7. Calculate total container size.
+        // Calculate object data size.
         let object_bytes_size: u64 = self
             .objects
             .iter()
             .map(|object| object.payload.len() as u64)
             .sum();
 
+        // Calculate total container size.
         let total_length =
-            TOTAL_HEADER_SIZE as u64
-            + directory_bytes.len() as u64
-            + object_bytes_size;
+            TOTAL_HEADER_SIZE as u64 + directory_bytes.len() as u64 + object_bytes_size;
 
-        // 8. Create STM header.
+        // Create header.
         let header = StmHeader::new(total_length, merkle_root);
+
         let header_bytes = header.to_bytes();
 
-        // 9. Assemble the final container.
+        // Assemble container.
         let mut out = Vec::with_capacity(total_length as usize);
 
         out.extend_from_slice(&header_bytes);

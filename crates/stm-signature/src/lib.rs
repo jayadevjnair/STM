@@ -1,6 +1,4 @@
-use ed25519_dalek::{
-    Signature, Signer, SigningKey, Verifier, VerifyingKey,
-};
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use stm_core::{Hash, StmError};
 
@@ -13,10 +11,7 @@ pub fn generate_signing_key() -> SigningKey {
 }
 
 /// Sign an STM Merkle root.
-pub fn sign_merkle_root(
-    signing_key: &SigningKey,
-    merkle_root: &Hash,
-) -> [u8; SIGNATURE_SIZE] {
+pub fn sign_merkle_root(signing_key: &SigningKey, merkle_root: &Hash) -> [u8; SIGNATURE_SIZE] {
     let signature: Signature = signing_key.sign(merkle_root);
     signature.to_bytes()
 }
@@ -35,16 +30,11 @@ pub fn verify_merkle_root(
 }
 
 /// Get the public key bytes.
-pub fn public_key_bytes(
-    signing_key: &SigningKey,
-) -> [u8; PUBLIC_KEY_SIZE] {
+pub fn public_key_bytes(signing_key: &SigningKey) -> [u8; PUBLIC_KEY_SIZE] {
     signing_key.verifying_key().to_bytes()
 }
 
 /// Restore a verifying key from raw bytes.
-pub fn verifying_key_from_bytes(
-    bytes: &[u8; PUBLIC_KEY_SIZE],
-) -> Result<VerifyingKey, StmError> {
-    VerifyingKey::from_bytes(bytes)
-        .map_err(|_| StmError::InvalidPublicKey)
+pub fn verifying_key_from_bytes(bytes: &[u8; PUBLIC_KEY_SIZE]) -> Result<VerifyingKey, StmError> {
+    VerifyingKey::from_bytes(bytes).map_err(|_| StmError::InvalidPublicKey)
 }

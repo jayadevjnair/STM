@@ -429,6 +429,7 @@ dependencies = [
  "clap",
  "stm-core",
  "stm-parser",
+ "stm-signature",
  "stm-writer",
 ]
 
