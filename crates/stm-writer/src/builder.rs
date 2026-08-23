@@ -1,8 +1,12 @@
-use stm_binary::{StmHeader, TOTAL_HEADER_SIZE};
 use stm_container::directory::{Directory, DirectoryEntry};
 use stm_core::{Hash, ObjectFlags, ObjectType, Oid, StmError};
 use stm_crypto::{build_merkle_root, compute_leaf};
-
+use stm_binary::{SignatureBlock, StmHeader, TOTAL_HEADER_SIZE};
+use stm_signature::{
+    public_key_bytes,
+    sign_merkle_root,
+    generate_signing_key,
+};
 #[derive(Debug, Clone)]
 pub struct PendingObject {
     pub oid: Oid,
@@ -22,6 +26,48 @@ impl ContainerBuilder {
             objects: Vec::new(),
         }
     }
+    /// Build a signed STM container.
+///
+/// The Ed25519 signature protects the container's Merkle root.
+/// Build a signed STM container.
+///
+/// The Ed25519 signature protects the container's Merkle root.
+pub fn build_signed(&mut self) -> Result<Vec<u8>, StmError> {
+    // 1. Build the unsigned container first.
+    let mut container = self.build()?;
+
+    // 2. Generate a signing key.
+    let signing_key = generate_signing_key();
+
+    // 3. Read the current header.
+    let mut header = StmHeader::from_bytes(&container)?;
+
+    // 4. Sign the Merkle root.
+    let signature =
+        sign_merkle_root(&signing_key, &header.core.merkle_root);
+
+    // 5. Extract the public key.
+    let public_key = public_key_bytes(&signing_key);
+
+    // 6. Create the signature block.
+    let signature_block =
+        SignatureBlock::new(public_key, signature);
+
+    let signature_bytes = signature_block.to_bytes();
+
+    // 7. Update total length BEFORE writing the final header.
+    header.core.total_length += signature_bytes.len() as u64;
+
+    // 8. Replace the header bytes.
+    let header_bytes = header.to_bytes();
+    container[0..TOTAL_HEADER_SIZE]
+        .copy_from_slice(&header_bytes);
+
+    // 9. Append signature block.
+    container.extend_from_slice(&signature_bytes);
+
+    Ok(container)
+}
 
     pub fn add_object(
         &mut self,

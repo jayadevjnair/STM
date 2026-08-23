@@ -16,7 +16,12 @@ pub enum StmError {
 
     #[error("invalid object offset")]
     InvalidOffset,
+    #[error("invalid digital signature")]
+    InvalidSignature,
 
+    #[error("invalid public key")]
+    InvalidPublicKey,
+    
     #[error("object exceeds container bounds")]
     ObjectOutOfBounds,
 

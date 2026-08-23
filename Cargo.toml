@@ -7,6 +7,6 @@ members = [
     "crates/stm-parser",
     "crates/stm-writer",
     "crates/stm-cli",
+    "crates/stm-signature",
 ]
-
 resolver = "2"

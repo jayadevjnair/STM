@@ -1,4 +1,6 @@
 use stm_core::{Hash, StmError};
+pub mod header;
+pub use header::*;
 
 pub const MAGIC: [u8; 4] = *b"STMF";
 pub const VERSION: u32 = 0x0001_0000;
@@ -6,7 +8,8 @@ pub const VERSION: u32 = 0x0001_0000;
 pub const CORE_HEADER_SIZE: usize = 48;
 pub const EXTENSION_HEADER_SIZE: usize = 24;
 pub const TOTAL_HEADER_SIZE: usize = 72;
-
+pub mod signature;
+pub use signature::*;
 /// STM 1.0 fixed 48-byte core header.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CoreHeader {
