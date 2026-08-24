@@ -8,7 +8,8 @@ members = [
     "crates/stm-writer",
     "crates/stm-cli",
     "crates/stm-signature",
-    
+    "crates/stm-server",
+    "crates/stm-file"
 ]
 resolver = "2"
 license = "MIT"

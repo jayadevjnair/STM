@@ -8,6 +8,9 @@ pub type Hash = [u8; 32];
 /// STM Object Type identifier.
 pub type ObjectType = u32;
 
+pub const TYPE_METADATA: ObjectType = 1;
+pub const TYPE_FILE: ObjectType = 2;
+
 /// Object state identifier.
 pub type ObjectState = u16;
 

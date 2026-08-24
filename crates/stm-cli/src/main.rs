@@ -13,7 +13,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new STM container
+    /// Create a new STM container with dummy objects
     Create {
         /// Output file path
         output: PathBuf,
@@ -21,6 +21,25 @@ enum Commands {
         /// Number of dummy objects
         #[arg(short, long, default_value_t = 1)]
         count: usize,
+
+        /// Create a digitally signed STM container
+        #[arg(long)]
+        signed: bool,
+
+        /// Path to the Ed25519 private key
+        #[arg(long)]
+        key: Option<PathBuf>,
+    },
+
+    /// Convert a normal file to an STM container with metadata
+    #[command(name = "file-create")]
+    FileCreate {
+        /// Input file path (photo.png, document.pdf, etc.)
+        input: PathBuf,
+
+        /// Output .stmf container path
+        #[arg(short, long)]
+        output: PathBuf,
 
         /// Create a digitally signed STM container
         #[arg(long)]
@@ -46,16 +65,16 @@ enum Commands {
         /// STM container file
         input: PathBuf,
     },
-    /// Extract an object from an STM container
+    /// Extract an object or the original file from an STM container
     Extract {
         /// STM container file
         input: PathBuf,
 
-        /// Object number
+        /// Specific object number (if omitted, automatically extracts original file)
         #[arg(long)]
-        oid: u64,
+        oid: Option<u64>,
 
-        /// Output file for the extracted object
+        /// Output directory or file path
         #[arg(short, long)]
         output: PathBuf,
     },
@@ -114,6 +133,36 @@ fn main() -> Result<()> {
 
             println!("Created STM container: {}", output.display());
             println!("Objects: {}", count);
+            println!("Signed: {}", if signed { "YES" } else { "NO" });
+        }
+
+        Commands::FileCreate {
+            input,
+            output,
+            signed,
+            key,
+        } => {
+            let signing_key = if signed {
+                let key_path = key.ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "A private key is required when using --signed. Use --key <path>"
+                    )
+                })?;
+
+                let key_data = std::fs::read(&key_path)?;
+                let sk = stm_signature::load_signing_key(&key_data)
+                    .map_err(|error| anyhow::anyhow!("{}", error))?;
+                Some(sk)
+            } else {
+                None
+            };
+
+            stm_file::convert_file_to_stmf(&input, &output, signing_key.as_ref())
+                .map_err(|e| anyhow::anyhow!("Failed to convert file to STM: {:?}", e))?;
+
+            println!("Converted file to STM container");
+            println!("Input: {}", input.display());
+            println!("Output: {}", output.display());
             println!("Signed: {}", if signed { "YES" } else { "NO" });
         }
 
@@ -222,21 +271,29 @@ fn main() -> Result<()> {
                 println!();
             }
         }
-        // Extract an object from an STM container
+        // Extract an object or the original file from an STM container
         Commands::Extract { input, oid, output } => {
-            use stm_parser::{ParserMode, StmParser};
+            if let Some(object_number) = oid {
+                use stm_parser::{ParserMode, StmParser};
 
-            let data = std::fs::read(&input)?;
-            let parser = StmParser::new(ParserMode::Strict);
+                let data = std::fs::read(&input)?;
+                let parser = StmParser::new(ParserMode::Strict);
 
-            let object_data = parser.extract_object_by_number(&data, oid)?;
+                let object_data = parser.extract_object_by_number(&data, object_number)?;
+                std::fs::write(&output, object_data)?;
 
-            std::fs::write(&output, object_data)?;
+                println!("Object extracted successfully");
+                println!("Input: {}", input.display());
+                println!("Object: {}", object_number);
+                println!("Output: {}", output.display());
+            } else {
+                let extracted_path = stm_file::extract_original_file(&input, &output)
+                    .map_err(|e| anyhow::anyhow!("Extraction failed: {:?}", e))?;
 
-            println!("Object extracted successfully");
-            println!("Input: {}", input.display());
-            println!("Object: {}", oid);
-            println!("Output: {}", output.display());
+                println!("Original file extracted successfully");
+                println!("Input: {}", input.display());
+                println!("Saved to: {}", extracted_path.display());
+            }
         }
         Commands::Keygen { output } => {
             use stm_signature::{generate_signing_key, public_key_bytes};

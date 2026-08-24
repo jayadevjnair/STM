@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STM Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>STM VIEWER</h1>
+            <span class="badge">● LOCALHOST</span>
+        </header>
+        <div class="layout">
+            <nav class="sidebar">
+                <button class="nav-btn active" data-target="home-view">Home</button>
+                <button class="nav-btn" data-target="create-view">Create</button>
+                <button class="nav-btn" data-target="open-view">Open / Viewer</button>
+                <button class="nav-btn" data-target="verify-view">Verify</button>
+                <button class="nav-btn" data-target="inspect-view">Inspect</button>
+            </nav>
+            <main class="content">
+                <!-- Home View -->
+                <div id="home-view" class="view active">
+                    <h2>Secure Trusted Media Container System</h2>
+                    <p>Welcome to the STM ecosystem. Create, inspect, and verify trusted media containers locally.</p>
+                </div>
+
+                <!-- Create View -->
+                <div id="create-view" class="view">
+                    <h2>Create STM Container</h2>
+                    <div class="drop-zone" id="create-drop-zone">
+                        <p>Drop file here or click to browse</p>
+                        <input type="file" id="create-file-input" hidden>
+                        <div id="create-file-info" class="file-info hidden"></div>
+                    </div>
+                    <div class="options">
+                        <label>
+                            <input type="checkbox" id="sign-checkbox"> Sign container
+                        </label>
+                    </div>
+                    <button class="btn primary" id="convert-btn" disabled>Convert to STMF</button>
+                    <div id="create-result" class="result hidden"></div>
+                </div>
+
+                <!-- Open View -->
+                <div id="open-view" class="view">
+                    <h2>STM Viewer</h2>
+                    <div class="drop-zone" id="open-drop-zone">
+                        <p>Drop .stmf file here or click to browse</p>
+                        <input type="file" id="open-file-input" hidden accept=".stmf">
+                    </div>
+                    
+                    <div id="viewer-container" class="viewer-container hidden">
+                        <div class="security-status" id="security-status">
+                            <!-- Populated dynamically -->
+                        </div>
+                        
+                        <div class="media-preview" id="media-preview">
+                            <!-- Populated dynamically based on mime type -->
+                        </div>
+                        
+                        <div class="viewer-actions">
+                            <button class="btn" id="extract-btn">Extract Original</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Verify View -->
+                <div id="verify-view" class="view">
+                    <h2>Verify STM Container</h2>
+                    <div class="drop-zone" id="verify-drop-zone">
+                        <p>Drop .stmf file here to verify integrity</p>
+                        <input type="file" id="verify-file-input" hidden accept=".stmf">
+                    </div>
+                    <div id="verify-result" class="result hidden"></div>
+                </div>
+
+                <!-- Inspect View -->
+                <div id="inspect-view" class="view">
+                    <h2>Inspect STM Container</h2>
+                    <div class="drop-zone" id="inspect-drop-zone">
+                        <p>Drop .stmf file here to inspect internals</p>
+                        <input type="file" id="inspect-file-input" hidden accept=".stmf">
+                    </div>
+                    <div id="inspect-result" class="result hidden"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
