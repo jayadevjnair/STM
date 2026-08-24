@@ -1,0 +1,12 @@
+[package]
+name = "stm-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+stm-core = { path = "../stm-core" }
+stm-crypto = { path = "../stm-crypto" }
+hex = "0.4"
+tempfile = "3.10"

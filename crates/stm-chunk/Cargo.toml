@@ -1,0 +1,19 @@
+[package]
+name = "stm-chunk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+stm-core = { path = "../stm-core" }
+stm-crypto = { path = "../stm-crypto" }
+stm-manifest = { path = "../stm-manifest" }
+stm-storage = { path = "../stm-storage" }
+tempfile = "3.10"
+
+[dev-dependencies]
+stm-transfer = { path = "../stm-transfer" }
+stm-signature = { path = "../stm-signature" }
+sha2 = "0.10"
+hex = "0.4"

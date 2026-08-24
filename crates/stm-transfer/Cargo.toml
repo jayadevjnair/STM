@@ -1,0 +1,24 @@
+[package]
+name = "stm-transfer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dev-dependencies]
+tempfile = "3.10"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+axum = "0.7"
+stm-storage-server = { path = "../stm-storage-server" }
+stm-signature = { path = "../stm-signature" }
+
+[dependencies]
+stm-core = { path = "../stm-core" }
+stm-manifest = { path = "../stm-manifest" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json"] }
+stm-chunk = { path = "../stm-chunk" }
+stm-storage = { path = "../stm-storage" }
+stm-crypto = { path = "../stm-crypto" }
+hex = "0.4"

@@ -1,5 +1,4 @@
-pub use ed25519_dalek::SigningKey;
-use ed25519_dalek::{Signature, Signer, Verifier, VerifyingKey};
+pub use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use stm_core::{Hash, StmError};
 pub const SIGNATURE_SIZE: usize = 64;

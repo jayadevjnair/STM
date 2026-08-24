@@ -10,7 +10,12 @@ members = [
     "crates/stm-signature",
     "crates/stm-server",
     "crates/stm-file",
-    "crates/stm-stream"
+    "crates/stm-stream",
+    "crates/stm-manifest",
+    "crates/stm-chunk",
+    "crates/stm-storage",
+    "crates/stm-transfer",
+    "crates/stm-storage-server"
 ]
 resolver = "2"
 
