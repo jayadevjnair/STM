@@ -45,6 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Helper for requests with progress tracking
+    function postWithProgress(url, formData, onProgress, responseType = 'json') {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.responseType = responseType;
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable && onProgress) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(e.loaded, e.total, percent);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network request failed'));
+            xhr.send(formData);
+        });
+    }
+
     // CREATE VIEW
     let createSelectedFile = null;
     setupDropZone('create-drop-zone', 'create-file-input', (file) => {
@@ -63,9 +90,21 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', createSelectedFile);
         formData.append('sign', sign);
 
-        const res = await fetch('/api/convert', { method: 'POST', body: formData });
-        if (res.ok) {
-            const blob = await res.blob();
+        const progressContainer = document.getElementById('create-progress');
+        const progressBar = document.getElementById('create-progress-bar');
+        const progressPct = document.getElementById('create-progress-pct');
+        const progressText = document.getElementById('create-progress-text');
+        
+        progressContainer.classList.remove('hidden');
+        progressText.textContent = `Streaming ${createSelectedFile.name}...`;
+
+        try {
+            const blob = await postWithProgress('/api/convert', formData, (loaded, total, pct) => {
+                progressBar.style.width = `${pct}%`;
+                progressPct.textContent = `${pct}%`;
+                progressText.textContent = `Streaming (${formatBytes(loaded)} / ${formatBytes(total)})...`;
+            }, 'blob');
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -75,11 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
             a.download = outName + '.stmf';
             a.click();
             
+            progressText.textContent = 'Conversion complete!';
             const resultDiv = document.getElementById('create-result');
             resultDiv.innerHTML = `✓ STM Container Created<br>Original File: ${createSelectedFile.name}<br>Signature: ${sign ? 'Enabled' : 'Disabled'}`;
             resultDiv.classList.remove('hidden');
-        } else {
-            alert('Failed to convert file');
+        } catch (err) {
+            alert('Failed to convert file: ' + err.message);
+        } finally {
+            setTimeout(() => progressContainer.classList.add('hidden'), 3000);
         }
     });
 
@@ -91,9 +133,28 @@ document.addEventListener('DOMContentLoaded', () => {
         currentOpenStmf = file;
         const formData = new FormData();
         formData.append('file', file);
-        
-        const res = await fetch('/api/open', { method: 'POST', body: formData });
-        const data = await res.json();
+
+        const progressContainer = document.getElementById('open-progress');
+        const progressBar = document.getElementById('open-progress-bar');
+        const progressPct = document.getElementById('open-progress-pct');
+        const progressText = document.getElementById('open-progress-text');
+
+        progressContainer.classList.remove('hidden');
+        progressText.textContent = `Loading ${file.name}...`;
+
+        let data;
+        try {
+            data = await postWithProgress('/api/open', formData, (loaded, total, pct) => {
+                progressBar.style.width = `${pct}%`;
+                progressPct.textContent = `${pct}%`;
+            });
+        } catch (err) {
+            alert('Failed to open container: ' + err.message);
+            progressContainer.classList.add('hidden');
+            return;
+        } finally {
+            progressContainer.classList.add('hidden');
+        }
         
         const container = document.getElementById('viewer-container');
         container.classList.remove('hidden');

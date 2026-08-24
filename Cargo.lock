@@ -929,7 +929,7 @@ dependencies = [
 
 [[package]]
 name = "stm-cli"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -937,6 +937,7 @@ dependencies = [
  "stm-file",
  "stm-parser",
  "stm-signature",
+ "stm-stream",
  "stm-writer",
 ]
 
@@ -951,7 +952,7 @@ dependencies = [
 name = "stm-core"
 version = "0.1.0"
 dependencies = [
- "thiserror",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -964,15 +965,19 @@ dependencies = [
 
 [[package]]
 name = "stm-file"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "mime_guess",
  "serde",
  "serde_json",
+ "stm-binary",
+ "stm-container",
  "stm-core",
+ "stm-crypto",
  "stm-parser",
  "stm-signature",
+ "stm-stream",
  "stm-writer",
  "tempfile",
 ]
@@ -1017,6 +1022,17 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "stm-core",
+]
+
+[[package]]
+name = "stm-stream"
+version = "1.1.0"
+dependencies = [
+ "sha2",
+ "stm-core",
+ "stm-crypto",
+ "tempfile",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1085,11 +1101,31 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+dependencies = [
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
 version = "2.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 2.0.20",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

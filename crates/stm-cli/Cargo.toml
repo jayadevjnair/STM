@@ -1,6 +1,6 @@
 [package]
 name = "stm-cli"
-version = "0.1.0"
+version = "1.1.0"
 edition = "2021"
 
 [dependencies]
@@ -11,3 +11,4 @@ stm-writer = { path = "../stm-writer" }
 stm-parser = { path = "../stm-parser" }
 stm-signature = { path = "../stm-signature" }
 stm-file = { path = "../stm-file" }
+stm-stream = { path = "../stm-stream" }

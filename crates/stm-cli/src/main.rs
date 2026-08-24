@@ -157,8 +157,14 @@ fn main() -> Result<()> {
                 None
             };
 
-            stm_file::convert_file_to_stmf(&input, &output, signing_key.as_ref())
-                .map_err(|e| anyhow::anyhow!("Failed to convert file to STM: {:?}", e))?;
+            let progress = stm_stream::CliProgressBar::new("Creating STM container");
+            stm_file::convert_file_to_stmf_streaming(
+                &input,
+                &output,
+                signing_key.as_ref(),
+                Some(&progress),
+            )
+            .map_err(|e| anyhow::anyhow!("Failed to convert file to STM: {:?}", e))?;
 
             println!("Converted file to STM container");
             println!("Input: {}", input.display());
@@ -199,12 +205,12 @@ fn main() -> Result<()> {
         }
 
         Commands::Verify { input } => {
-            use stm_parser::{ParserMode, StmParser};
-
-            let data = std::fs::read(&input)?;
-            let parser = StmParser::new(ParserMode::Strict);
-
-            match parser.parse_bytes(&data) {
+            let progress = stm_stream::CliProgressBar::new("Verifying STM container");
+            match stm_file::verify_file_streaming(
+                &input,
+                stm_stream::DEFAULT_CHUNK_SIZE,
+                Some(&progress),
+            ) {
                 Ok(summary) => {
                     println!("STM Container Verification");
                     println!("File: {}", input.display());
@@ -287,8 +293,10 @@ fn main() -> Result<()> {
                 println!("Object: {}", object_number);
                 println!("Output: {}", output.display());
             } else {
-                let extracted_path = stm_file::extract_original_file(&input, &output)
-                    .map_err(|e| anyhow::anyhow!("Extraction failed: {:?}", e))?;
+                let progress = stm_stream::CliProgressBar::new("Extracting original file");
+                let extracted_path =
+                    stm_file::extract_file_streaming(&input, &output, Some(&progress))
+                        .map_err(|e| anyhow::anyhow!("Extraction failed: {:?}", e))?;
 
                 println!("Original file extracted successfully");
                 println!("Input: {}", input.display());

@@ -11,6 +11,17 @@ If even a single bit of a container's content, metadata, or signature is altered
 
 ---
 
+## 🚀 What's New in v1.1.0
+
+* **Streaming File Conversion**: Two-pass chunked stream writer (`convert_file_to_stmf_streaming`) for large files without loading entire files into RAM.
+* **Streaming Verification & Extraction**: Incremental container hashing and extraction (`verify_file_streaming`, `extract_file_streaming`) with bounded 4 MiB buffers.
+* **New `stm-stream` Crate**: Modular chunk readers, writers, and `ProgressReporter` traits.
+* **CLI Progress Bars**: Real-time terminal progress indicators for `file-create`, `verify`, and `extract`.
+* **Web UI Progress Reporting**: Live progress bars for file conversion and verification.
+* **100% Backward Compatible**: Retains identical 72-byte binary header and object Merkle root format.
+
+---
+
 ## 🌟 Key Features
 
 * **Fixed 72-Byte Binary Header**: Compact, constant-size binary container header storing magic identifier, version, total container length, and SHA-256 Merkle root.

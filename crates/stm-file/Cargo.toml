@@ -1,13 +1,17 @@
 [package]
 name = "stm-file"
-version = "0.1.0"
-edition = "2024"
+version = "1.1.0"
+edition = "2021"
 
 [dependencies]
 stm-core = { path = "../stm-core" }
+stm-binary = { path = "../stm-binary" }
+stm-container = { path = "../stm-container" }
+stm-crypto = { path = "../stm-crypto" }
 stm-writer = { path = "../stm-writer" }
 stm-parser = { path = "../stm-parser" }
 stm-signature = { path = "../stm-signature" }
+stm-stream = { path = "../stm-stream" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 mime_guess = "2.0"

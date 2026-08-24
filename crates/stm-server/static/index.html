@@ -40,6 +40,15 @@
                             <input type="checkbox" id="sign-checkbox"> Sign container
                         </label>
                     </div>
+                    <div id="create-progress" class="progress-container hidden">
+                        <div class="progress-label">
+                            <span id="create-progress-text">Processing...</span>
+                            <span id="create-progress-pct">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="create-progress-bar" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
                     <button class="btn primary" id="convert-btn" disabled>Convert to STMF</button>
                     <div id="create-result" class="result hidden"></div>
                 </div>
@@ -52,6 +61,16 @@
                         <input type="file" id="open-file-input" hidden accept=".stmf">
                     </div>
                     
+                    <div id="open-progress" class="progress-container hidden">
+                        <div class="progress-label">
+                            <span id="open-progress-text">Verifying and loading container...</span>
+                            <span id="open-progress-pct">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="open-progress-bar" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
                     <div id="viewer-container" class="viewer-container hidden">
                         <div class="security-status" id="security-status">
                             <!-- Populated dynamically -->
